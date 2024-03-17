@@ -9,7 +9,18 @@ import java.time.Duration;
 
 public class FluxDemo {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
+
+        fluxMethodTest();
+
+//        fluxStreamErrorTest();
+
+    }
+
+    /**
+     * 测试如何触发Flux的doOnError事件
+     */
+    public static void fluxStreamErrorTest(){
 
         Flux.just(1, 2, 3, 4, 0)
                 .map(ele -> 10 / ele)
@@ -19,15 +30,14 @@ public class FluxDemo {
                 .subscribe(ele -> {
                     System.out.println("数据流元素： " + ele);
                 });
-
-
     }
 
     /**
      * 测试flux多个元素的处理流
+     *
      * @throws InterruptedException
      */
-    public static void fluxTest() throws InterruptedException {
+    public static void fluxMethodTest() throws InterruptedException {
 
         Flux<Integer> just = Flux.just(1, 2, 3, 4)
                 .delayElements(Duration.ofSeconds(1))
@@ -39,10 +49,10 @@ public class FluxDemo {
                 })
                 .doOnError(error -> {
 //                    对流本身进行处理的时候，才会触发这个方法
-                    System.out.println("流出错了 " + error.getMessage());
+                    System.out.println("Flux流本身处理过程出错了 " + error.getMessage());
                 })
                 .doOnNext(ele -> {
-                    System.out.println("doOnNext: " + ele);
+                    System.out.println("Flux流 doOnNext: " + ele);
                 });
 
         just.subscribe(new BaseSubscriber<Integer>() {
@@ -69,12 +79,14 @@ public class FluxDemo {
             @Override
             protected void hookOnNext(Integer value) {
                 super.hookOnNext(value);
-                System.out.println("订阅下一个元素: " + value);
 
                 if (value < 5) {
-                    System.out.println("订阅的元素是： " + value);
+                    System.out.println("订阅者订阅的元素是： " + value);
                     if (value == 3) {
                         int i = value / 0;
+                    }
+                    if(value ==4){
+                        hookOnCancel();
                     }
                 }
 
@@ -90,13 +102,15 @@ public class FluxDemo {
             @Override
             protected void hookOnError(Throwable throwable) {
                 super.hookOnError(throwable);
-                System.out.println("hookOnError 订阅者订阅出错");
+                System.out.println("hookOnError 订阅者订阅出错" + throwable.getMessage());
             }
 
             @Override
             protected void hookOnCancel() {
                 super.hookOnCancel();
-                System.out.println("hookOnCancel 订阅者订阅取消");
+                System.out.println("hookOnCancel 订阅者取消订阅");
+                cancel();
+
             }
 
             @Override
