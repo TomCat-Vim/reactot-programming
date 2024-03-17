@@ -23,15 +23,19 @@ public class FluxDemo {
 
     }
 
+    /**
+     * 测试flux多个元素的处理流
+     * @throws InterruptedException
+     */
     public static void fluxTest() throws InterruptedException {
 
         Flux<Integer> just = Flux.just(1, 2, 3, 4)
                 .delayElements(Duration.ofSeconds(1))
                 .doOnComplete(() -> {
-                    System.out.println("订阅流完成");
+                    System.out.println("Flux流被订阅者处理完");
                 })
                 .doOnCancel(() -> {
-                    System.out.println("取消流的订阅");
+                    System.out.println("Flux流的订阅被取消");
                 })
                 .doOnError(error -> {
 //                    对流本身进行处理的时候，才会触发这个方法
